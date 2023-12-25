@@ -1,0 +1,59 @@
+<!-- TODO: Create a search function to find videos -->
+<!-- TODO: Actually write the handler -->
+
+<div id='vids' class="container text-center">
+    <div class="1row" id="1col"><!--col-->
+        <!--
+      <div class="col">
+        Column
+      </div>
+      <div class="col">
+        Column
+      </div>
+      <div class="col">
+        Column
+      </div>
+    -->
+    </div>
+  </div>
+  <script type="text/javascript">
+    function createBR() {
+        return document.createElement('br');
+    }
+    function createDIV() {
+        return document.createElement('div');
+    }
+    async function ftch() {
+        var doc = document.getElementById('vids')
+        var data = await fetch("http://127.0.0.1:3056/fnames")
+        var data = await data.json()
+        var data = data.vids;
+        counter = 0;
+        col = 1
+        var column = document.getElementById(`${col}col`)
+        for (var a of data) {
+            counter++;
+            var header = document.createElement("h4");
+            header.innerText = a;
+            var br = createBR();
+            var vid = document.createElement('video');
+            vid.setAttribute('controls', "");
+            vid.setAttribute('width', '320px');
+            vid.setAttribute('height', '240px');
+            var source = document.createElement('source');
+            source.setAttribute('src', `http://127.0.0.1:3055/videos/${a}`);
+            vid.appendChild(source)
+            //<source src="movie.mp4" type="video/mp4">
+            //width="320" height="240"
+            var div = createDIV();
+            div.appendChild(header);
+            div.appendChild(br);
+            div.appendChild(vid);
+            column.appendChild(div);
+            if(counter % 3 == 0) {
+            }
+
+        }
+    }
+    ftch()
+  </script>

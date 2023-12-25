@@ -78,7 +78,7 @@ app.get("/favicon.ico", (req, res, next) => {
 })
 
 app.use('/about', about);
-app.use('/videos', app.static('downloads'))
+app.use('/videos', express.static('downloads'))
 app.use('/download', download);
 
 app.use('*', fourofour); //404 handeler.

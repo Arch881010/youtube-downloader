@@ -1,8 +1,11 @@
 
 #import the package
 from pytube import YouTube
-from flask import *
-import flask
+from flask import Flask
+from flask_cors import CORS, cross_origin
+app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 import os
 
 from markupsafe import escape
@@ -10,13 +13,15 @@ from markupsafe import escape
 app = Flask(__name__)
 
 @app.route('/fnames')
+@cross_origin()
 def fname124():
     x = os.getcwd()
     #print(os.listdir('./downloads'))
     files = os.listdir("./downloads") #if os.path.isfile(f)]
-    return files
+    return {'vids':files}
 
 @app.route('/download/')
+@cross_origin()
 async def dl2354():
     param = request.args.get('url')
     print(f"Downloading Video.. {param}")
@@ -27,6 +32,12 @@ async def dl2354():
     return f'{param} downloaded!'
 
 
+def _build_cors_preflight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add('Access-Control-Allow-Headers', "*")
+    response.headers.add('Access-Control-Allow-Methods', "*")
+    return response
 
 
 #print("Enter your URL")
