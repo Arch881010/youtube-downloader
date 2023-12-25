@@ -34,7 +34,7 @@
         for (var a of data) {
             counter++;
             var header = document.createElement("h4");
-            header.innerText = a;
+            header.innerText = a.replace(".mp4", "");
             var br = createBR();
             var vid = document.createElement('video');
             vid.setAttribute('controls', "");
