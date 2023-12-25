@@ -23,10 +23,13 @@ def fname124():
 @app.route('/download/')
 @cross_origin()
 def dl2354():
-    param = request.args.get('url') 
-    print(f"Downloading Video.. {param}")
-    my_video = YouTube(param)
-    my_video = my_video.streams.get_highest_resolution()
-    print("Found best resolution, downloading.")
-    my_video.download("./downloads")
-    return "Video downloaded!"
+    try:
+        param = request.args.get('url') 
+        print(f"Downloading Video.. {param}")
+        my_video = YouTube(param)
+        my_video = my_video.streams.get_highest_resolution()
+        print("Found best resolution, downloading.")  
+        my_video.download("./downloads")
+        return "Video downloaded!"
+    except:
+        return "Failed to downlaod video. Either server is overloaded or the video is age-restricted."

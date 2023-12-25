@@ -1,2 +1,2 @@
 pip install flask flask_cors pytube
-flask run --port 3056
+python -m flask run --port 3056
