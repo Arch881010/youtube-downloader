@@ -1,0 +1,32 @@
+<meta charset="UTF-8">
+<meta name="undef">
+<title>404</title>
+
+<style>
+  body { padding-top:50px; }
+</style>
+
+<head>
+  <%- include('../partials/head'); %>
+</head>
+
+<body class="container">
+  <header>
+    <%- include('../partials/header'); %>
+  </header>
+  
+  <main>
+    <div class="jumbotron">
+      <h1>404</h1>
+      <p>I'm sorry, that page wasn't found.</p>
+      <p>Perhaps you wish to look at one of the other 404+ posts avaliable?</p> <!-- Funny. 404 with 404+ posts kek-->
+      <script type="text/javascript"></script> <!-- This will be inside the error partial (ejs)-->
+      <%- include('../partials/error'); %>
+    </div>
+  </main>
+  <%- include('../partials/noscript'); %>
+  <%- include('../partials/cookielogic') %>
+  <footer>
+    <%- include('../partials/footer'); %>
+  </footer>
+</body>

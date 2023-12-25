@@ -1,0 +1,17 @@
+<div id="cookie_alert" class="alert alert-info" role="alert">
+    <button id="cookie_alert_close" type="button" class="btn-close" aria-label="Close"></button><br>
+    We use cookies! These cookies are only used to transfer error data, account data, and message data to and from the server.<br>
+    We do not save any other data except what you have been provided.<br>
+    <script type="text/javascript">
+        function removeMe() {
+            var div = document.getElementById("cookie_alert");
+            Cookies.set("cookieOK", "1");
+            div.remove(); //Clear
+        }
+        document.getElementById('cookie_alert_close').onclick = removeMe;
+        try {
+            var x = Cookies.get('cookieOK') ?? 0;
+            if(x) removeMe();
+        } catch(err) {}
+    </script>
+</div>

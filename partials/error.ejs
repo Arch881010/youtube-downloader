@@ -1,0 +1,23 @@
+<b1>Error ID: <b><b1 id='error_id'><i>
+    <div class="spinner-border text-secondary spinners" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div></i></b1></b></b1>
+<script type="text/javascript">
+    const id = document.getElementById('error_id');
+    async function errorID() {
+        return id.innerText = "Not Applicable -- NO ERROR ENDPOINT";
+        try {
+        var x = await fetch("https://api.expo-post.com/error", {
+            "headers": {
+                "Content-type":"application/json"
+            },
+            "method":"POST",
+            "body": JSON.stringify({"code":"404", "text":`Error. CookiesJS: ${Cookies.get('error')}`})
+        });
+        var x = await x.json();
+        var x = x.errorID;
+        if(x == undefined) {id.innerText = "Something went wrong with the API, recieved undefined."} else {id.innerText = x;}
+    } catch(err) {x.innerText = "API Offline. Error not recieved."}
+    }
+    errorID()
+</script>

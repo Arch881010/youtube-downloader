@@ -1,0 +1,34 @@
+<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Youtube URL Here" aria-label="yt-vid-url" id="url-input"><br>
+</div>
+<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="What will be the name? If any (leave blank if you want default)" aria-label="yt-vid-name" id="new-name">
+</div>
+<div class="d-block p-2 text-bg-dark" id="result">Your result will appear here!</div>
+
+
+<script type="text/javascript">
+    var input = document.getElementById("url-input");
+    var name = document.getElementById('new-name');
+    input.addEventListener("keydown", async function(event) {
+      if (event.keyCode === 13) {
+        await ftchVid(input.value, name.value);
+      }
+    });
+    name.addEventListener("keydown", async function(event) {
+      if (event.keyCode === 13) {
+        await ftchVid(input.value, name.value);
+      }
+    });
+</script>
+
+<script type="text/javascript">
+    async function ftchVid(url, name) {
+        var name = name ?? "";
+        var status = await fetch(`http://127.0.0.1:3056/download/?url=${url}`);
+        var info = await status.text();
+        console.log(info);
+        //document.getElementById('result').innerHTML = info;
+        document.getElementById('result').innerText = `${info}`; 
+    }
+</script>
