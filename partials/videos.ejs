@@ -1,7 +1,7 @@
 <!-- TODO: Create a search function to find videos -->
 <!-- TODO: Actually write the handler -->
 
-<div id='vids' class="container text-center">
+<div id='vids' class="container text-center round default-padding">
     <div class="1row" id="1col"><!--col-->
         <!--
       <div class="col">
@@ -25,7 +25,7 @@
     }
     async function ftch() {
         var doc = document.getElementById('vids')
-        var data = await fetch("http://127.0.0.1:3056/fnames")
+        var data = await fetch("http://127.0.0.1:3056/fnames", {"method":"POST"})
         var data = await data.json()
         var data = data.vids;
         counter = 0;
@@ -47,8 +47,8 @@
             //width="320" height="240"
             var div = createDIV();
             div.appendChild(header);
-            div.appendChild(br);
             div.appendChild(vid);
+            div.appendChild(br);
             column.appendChild(div);
             if(counter % 3 == 0) {
             }

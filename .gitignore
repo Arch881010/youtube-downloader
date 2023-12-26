@@ -1,1 +1,4 @@
 node_modules
+private.pem
+public.pem
+index.db

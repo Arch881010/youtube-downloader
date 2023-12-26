@@ -1,0 +1,27 @@
+button {
+    --color: skyblue;
+    display: inline-block;
+    cursor: pointer;
+    text-decoration: none;
+    border: 3px solid var(--color);
+    color: white;
+    padding: .5em 1em;
+    border-radius: .25em;
+    position: relative;
+    isolation: isolate;
+}
+button::after {
+    content:"";
+    position: absolute;
+    z-index: -1;
+    background: var(--color);
+    inset: 0;
+}
+
+.round {
+    border-radius: .25em;
+}
+
+.default-padding {
+    padding: .5em 1em
+}

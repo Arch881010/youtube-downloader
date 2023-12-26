@@ -77,6 +77,7 @@ app.get("/favicon.ico", (req, res, next) => {
     return res.send(""); //Missing asset.
 })
 
+app.use('/css', express.static('css'))
 app.use('/about', about);
 app.use('/videos', express.static('downloads'))
 app.use('/download', download);
