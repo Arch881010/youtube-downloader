@@ -1,5 +1,8 @@
 Create user system
+- UI (create_new_account.ejs, login.ejs)
+- Background checks (validation)
 Create subdir if no dir found
-Have access keys
-Create User-Pass auth sys
-Have limits
+- On new user OR new download.
+~~Have access keys~~ - Completed
+~~Create User-Pass auth sys~~ - Completed
+Have limits (Video Download Limits)
