@@ -33,10 +33,12 @@
 <script type="text/javascript">
     async function ftchVid(url, name) {
         var name = name ?? "";
-        var status = await fetch(`http://127.0.0.1:3056/download/?url=${url}`, {"method":"POST"});
-        var info = await status.text();
-        console.log(info);
+        var url2 = await fetch("/url");
+        var url2 = await url2.text();
+        var status = await fetch(`${url2}download/?url=${url}`, {"method":"POST"});
+        var info = await status.json();
+        console.log(info.result);
         //document.getElementById('result').innerHTML = info;
-        document.getElementById('result').innerText = `${info}`; 
+        document.getElementById('result').innerText = `${info.result}`; 
     }
 </script>

@@ -2,13 +2,22 @@
 #import the packages
 from pytube import YouTube
 from flask import *
-from flask_cors import CORS, cross_origin
-app = Flask(__name__)
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
-import os
+from flask import *
+import flask
+from flask_cors import CORS
+import logging
+logging.getLogger('flask_cors').level = logging.DEBUG
 
-from markupsafe import escape
+
+#from flask.ext.cors import CORS, cross_origin
+
+
+app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
+app.debug = True
+
+import os
 
 import sqlite3
 from sqlite3 import Error
@@ -31,7 +40,7 @@ def create_connection(path):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-    return connection
+    return connection;
 
 connection = create_connection("./index.db")
 
@@ -42,6 +51,11 @@ CREATE TABLE IF NOT EXISTS users (
   key TEXT NOT NULL
 );
 """
+
+@app.before_request
+def basic_authentication():
+    if request.method.lower() == 'options':
+        return Response()
 
 active_users = []
 def default(data):
@@ -78,9 +92,10 @@ execute_query(connection, create_users_table)
     #with open("private.pem", "wb") as f:
     #    f.write(private_key.save_pkcs1("PEM"))
 
-@app.route('/fnames', methods=['POST'])
-@cross_origin()
-def fname124():
+@app.route('/fnames')
+def fname124(res):
+    print("hah")
+    print(res.method)
     try:
         user = request.args.get("user")
         key = request.headers.get("key")
@@ -88,13 +103,16 @@ def fname124():
         if user:
             files = os.listdir(f"./downloads/{user}") #if os.path.isfile(f)]
         else:
-            files = os.listdir(f"./downloads")
-        return {'vids':files}
+            files = os.listdir(f"./downloads") 
+        response = flask.jsonify({'vids':files})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
     except:
-        return {'vids':"BAD_BACKEND_ERROR"}
+        response = flask.jsonify({'vids':"BAD_BACKEND_ERROR"})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
 
-@app.route('/download/', methods=['POST'])
-@cross_origin()
+@app.route('/download')
 def dl2354():
     try:
         param = request.args.get('url') 
@@ -104,12 +122,17 @@ def dl2354():
         my_video = my_video.streams.get_highest_resolution()
         print("Found best resolution, downloading.")  
         my_video.download("./downloads")
+        response = flask.jsonify({'result':"Video downloaded!"})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
         return "Video downloaded!"
     except:
-        return "Failed to downlaod video. Either server is overloaded or the video is age-restricted."
+        response = flask.jsonify({'result': "Failed to downlaod video. Either server is overloaded or the video is age-restricted."})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        return 
 
-@app.route('/user/create', methods=['POST'])
-@cross_origin
+@app.route('/user/create')
 def CrUs1241():
     user = request.headers.get("user")
     password = request.headers.get("password")
@@ -118,6 +141,9 @@ def CrUs1241():
     if len(password) > 50:
         ""
     else:
+        response = flask.jsonify({'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
         return {'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"}
 # Query should inclue user (txt), password (txt; encrypted), key (txt)
 # Key = Auth Key
@@ -130,9 +156,15 @@ VALUES
 """
     try:
         execute_query(connection, query)
-        return {"result":"Sucess!", "key":key}
+        response = flask.jsonify({"result":"Sucess!", "key":key})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        return 
     except:
-        return {'result':"Failed to create user.", "key":"CREATED|SEE_RESULT"}
+        response = flask.jsonify({'result':"Failed to create user.", "key":"CREATED|SEE_RESULT"})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+        return 
 
 
 @app.get('/user/retrive')
@@ -141,6 +173,8 @@ def findUsers():
         active_users = data
     query = "SELECT user FROM user"
     execute_query(connection, query, store_users)
-    return {'users':active_users}
+    response = flask.jsonify({'users':active_users})
+    response.headers['Access-Control-Allow-Origin'] = '*'
 
+    return response
 

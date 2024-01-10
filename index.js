@@ -16,6 +16,9 @@ var express = require('express');
 
 const app = express(); //Create app
 const cors = require('cors') //Allow Cors
+require('dotenv').config()
+
+var url = process.env['url'] ?? "http://127.0.0.1:3056/" 
 
 app.use(cors()) //Enable Cors
 const cookieParser = require('cookie-parser');
@@ -43,6 +46,8 @@ const download = require('./routes/download.js')
 const fourofour = require('./routes/404.js');
 
 app.all("*", async function (req, res, next) {
+    return res.send("a")
+
     var uri = req.originalUrl;
     var cookies = req.cookies;
     if(uri != "favicon.ico" ) req.appendData = {
@@ -71,6 +76,10 @@ app.get('/', function (req, res, next) { //Main, does not need router.
         res.cookie("cookieOK", 0);
     }
     return res.cookie("where", "undefined").render(home_file, {x: cookieOK});
+})
+
+app.get('/url', (req, res) => {
+    res.send(url);
 })
 
 app.get("/favicon.ico", (req, res, next) => {
