@@ -1,7 +1,8 @@
 
 #import the packages
+import os
+#s.exec("pip install pytube flask flask_cors")
 from pytube import YouTube
-from flask import *
 from flask import *
 import flask
 from flask_cors import CORS
@@ -52,11 +53,6 @@ CREATE TABLE IF NOT EXISTS users (
 );
 """
 
-@app.before_request
-def basic_authentication():
-    if request.method.lower() == 'options':
-        return Response()
-
 active_users = []
 def default(data):
     ""
@@ -93,9 +89,10 @@ execute_query(connection, create_users_table)
     #    f.write(private_key.save_pkcs1("PEM"))
 
 @app.route('/fnames')
-def fname124(res):
+def fname124():
+    req = request
     print("hah")
-    print(res.method)
+    print(req.method)
     try:
         user = request.args.get("user")
         key = request.headers.get("key")
@@ -105,11 +102,9 @@ def fname124(res):
         else:
             files = os.listdir(f"./downloads") 
         response = flask.jsonify({'vids':files})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
     except:
         response = flask.jsonify({'vids':"BAD_BACKEND_ERROR"})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
 @app.route('/download')
@@ -123,12 +118,10 @@ def dl2354():
         print("Found best resolution, downloading.")  
         my_video.download("./downloads")
         response = flask.jsonify({'result':"Video downloaded!"})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
         return "Video downloaded!"
     except:
         response = flask.jsonify({'result': "Failed to downlaod video. Either server is overloaded or the video is age-restricted."})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
         return 
 
@@ -142,7 +135,6 @@ def CrUs1241():
         ""
     else:
         response = flask.jsonify({'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
         return {'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"}
 # Query should inclue user (txt), password (txt; encrypted), key (txt)
@@ -157,12 +149,10 @@ VALUES
     try:
         execute_query(connection, query)
         response = flask.jsonify({"result":"Sucess!", "key":key})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
         return 
     except:
         response = flask.jsonify({'result':"Failed to create user.", "key":"CREATED|SEE_RESULT"})
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
         return 
 
@@ -174,7 +164,22 @@ def findUsers():
     query = "SELECT user FROM user"
     execute_query(connection, query, store_users)
     response = flask.jsonify({'users':active_users})
-    response.headers['Access-Control-Allow-Origin'] = '*'
 
     return response
+
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', '*')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  response.headers.add("Access-Control-Expose-Headers","*")
+  response.headers.add("WhAT", "ABCDEFGADGAETASFASERASTA")
+  return response
+
+@app.get('/video/<string:url>')
+def a():
+    ""
+
+if __name__ == '__main__':
+    app.run()
 

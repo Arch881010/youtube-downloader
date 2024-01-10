@@ -18,7 +18,12 @@ const app = express(); //Create app
 const cors = require('cors') //Allow Cors
 require('dotenv').config()
 
-var url = process.env['url'] ?? "http://127.0.0.1:3056/" 
+var guiurl = process.env['guiurl'] ?? "http://127.0.0.1:3055/"
+var apiurl = process.env['apiurl'] ?? "http://127.0.0.1:3056/" 
+var urls = {
+    'guiurl': guiurl,
+    'apiurl': apiurl
+};
 
 app.use(cors()) //Enable Cors
 const cookieParser = require('cookie-parser');
@@ -46,7 +51,7 @@ const download = require('./routes/download.js')
 const fourofour = require('./routes/404.js');
 
 app.all("*", async function (req, res, next) {
-    return res.send("a")
+    //return res.send("a")
 
     var uri = req.originalUrl;
     var cookies = req.cookies;
@@ -79,11 +84,15 @@ app.get('/', function (req, res, next) { //Main, does not need router.
 })
 
 app.get('/url', (req, res) => {
-    res.send(url);
+    res.json(urls);
 })
 
 app.get("/favicon.ico", (req, res, next) => {
     return res.send(""); //Missing asset.
+})
+
+app.get('/fnames', (req, res, path) => {
+    res.redirect(`${apiurl}fnames`);
 })
 
 app.use('/css', express.static('css'))

@@ -34,8 +34,9 @@
     async function ftchVid(url, name) {
         var name = name ?? "";
         var url2 = await fetch("/url");
-        var url2 = await url2.text();
-        var status = await fetch(`${url2}download/?url=${url}`, {"method":"POST"});
+        var url2 = await url2.json();
+        var url2 = url2.apiurl;
+        var status = await fetch(`${url2}download/?url=${url}`, {"Sec-Fetch-Site": "cross-site", "method":"POST"});
         var info = await status.json();
         console.log(info.result);
         //document.getElementById('result').innerHTML = info;
