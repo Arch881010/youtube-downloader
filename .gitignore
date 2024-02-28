@@ -3,3 +3,5 @@ private.pem
 public.pem
 index.db
 .env
+downloads
+__pycache__

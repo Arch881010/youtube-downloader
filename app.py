@@ -1,12 +1,17 @@
 
 #import the packages
 import os
+import re
 #s.exec("pip install pytube flask flask_cors")
 from pytube import YouTube
 from flask import *
 import flask
 from flask_cors import CORS
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
+
 logging.getLogger('flask_cors').level = logging.DEBUG
 
 
@@ -14,7 +19,7 @@ logging.getLogger('flask_cors').level = logging.DEBUG
 
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
+cors = CORS(app)#, resources={r"/*": {"origins": "*"}})
 
 app.debug = True
 
@@ -33,6 +38,10 @@ def create_key(length):
     print("Random password is:", password)
     return password
 
+# Awful purify
+def clean(string):
+    return re.sub(r"[\"\'(),;[\]:]", "", string)
+
 def create_connection(path):
     connection = None
     try:
@@ -41,7 +50,7 @@ def create_connection(path):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-    return connection;
+    return connection
 
 connection = create_connection("./index.db")
 
@@ -64,6 +73,7 @@ def execute_query(connection, query, action=default):
         action(data)
         connection.commit()
         print("Query executed successfully")
+        return data
     except Error as e:
         print(f"The error '{e}' occurred")
 
@@ -91,14 +101,24 @@ execute_query(connection, create_users_table)
 @app.route('/fnames')
 def fname124():
     req = request
-    print("hah")
-    print(req.method)
+    #print("")
+    #print(req.method)
     try:
-        user = request.args.get("user")
-        key = request.headers.get("key")
+
+        # Lets not get hit with malformed requests, shall we?
+        user = clean(request.args.get("user"))
+
+        key = clean(request.headers.get("key"))
+
         files = []
         if user:
             files = os.listdir(f"./downloads/{user}") #if os.path.isfile(f)]
+            check = execute_query(f"SELECT key FROM users WHERE user='{user}'")
+            logged_key = clean(check.fetchone())
+            if key == logged_key:
+                ""
+            else: 
+                return flask.jsonify({'vids':["Never Gonna Give You Up.mp4", "Your key is invalid."]})
         else:
             files = os.listdir(f"./downloads") 
         response = flask.jsonify({'vids':files})
@@ -107,11 +127,14 @@ def fname124():
         response = flask.jsonify({'vids':"BAD_BACKEND_ERROR"})
         return response
 
-@app.route('/download')
+@app.route('/download/')
 def dl2354():
     try:
-        param = request.args.get('url') 
+        param = request.args.get('url')
+        # Lets not get hit with malformed requests, shall we?
+
         key = request.headers.get("key")
+        key = re.sub(r"[\"\']", "", key) #Same thing. 
         print(f"Downloading Video.. {param}")
         my_video = YouTube(param)
         my_video = my_video.streams.get_highest_resolution()
@@ -127,16 +150,18 @@ def dl2354():
 
 @app.route('/user/create')
 def CrUs1241():
-    user = request.headers.get("user")
-    password = request.headers.get("password")
+    # Lets not get hit with malformed requests, shall we?
+    user = clean(request.args.get("user"))
+    password = clean(request.args.get("password"))
+
     key = create_key(50)
     # Password should already be encrypted before getting here.
     if len(password) > 50:
         ""
     else:
         response = flask.jsonify({'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"})
-        return response
-        return {'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"}
+        #return response
+        return flask.jsonify({'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"})
 # Query should inclue user (txt), password (txt; encrypted), key (txt)
 # Key = Auth Key
     
@@ -167,13 +192,23 @@ def findUsers():
 
     return response
 
+@app.route("/download")
+def dwn241():
+    return ""
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return request.url
+
 @app.after_request
 def after_request(response):
-  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Origin', os.getenv('guiurl')[0:-1])
+  #print("Access-Control-Allow-Origin", os.getenv('guiurl'))
+  #print(response.headers['Access-Control-Allow-Origin'])
   response.headers.add('Access-Control-Allow-Headers', '*')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   response.headers.add("Access-Control-Expose-Headers","*")
-  response.headers.add("WhAT", "ABCDEFGADGAETASFASERASTA")
+  response.headers.add("test", "completed")
   return response
 
 @app.get('/video/<string:url>')

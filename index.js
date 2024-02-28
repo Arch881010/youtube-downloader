@@ -47,6 +47,8 @@ const home_file = "index.ejs"; //home_file to dev/active in dev mode.
 
 //Routers.
 const about = require('./routes/about.js');
+const login = require('./routes/login.ejs');
+const signup = require('./routes/signup.ejs')
 const download = require('./routes/download.js')
 const fourofour = require('./routes/404.js');
 
@@ -97,6 +99,8 @@ app.get('/fnames', (req, res, path) => {
 
 app.use('/css', express.static('css'))
 app.use('/about', about);
+app.use('/login', login);
+app.use('/signup', signup);
 app.use('/videos', express.static('downloads'))
 app.use('/download', download);
 

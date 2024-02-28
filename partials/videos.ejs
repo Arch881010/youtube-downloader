@@ -30,7 +30,7 @@
       var url = await fetch("/url");
       url = await url.json();
         var doc = document.getElementById('vids');
-        var data = await fetch(`${url.apiurl}fnames`, {headers: {"Sec-Fetch-Site": "cross-site"}, "method":"GET"})//, headers: {"Access-Control-Allow-Origin": "*"}})
+        var data = await fetch(`${url.apiurl}/fnames`, {headers: {"Sec-Fetch-Site": "cross-site"}, "method":"GET"})//, headers: {"Access-Control-Allow-Origin": "*"}})
         var data = await data.json();
         var data = data.vids;
         counter = 0;
@@ -46,16 +46,16 @@
             vid.setAttribute('width', '320px');
             vid.setAttribute('height', '240px');
             var source = document.createElement('source');
-            source.setAttribute('src', `${url.guiurl}videos/${a}`);
+            source.setAttribute('src', `${url.guiurl}/videos/${a}`);
             vid.appendChild(source)
             //<source src="movie.mp4" type="video/mp4">
             //width="320" height="240"
             var div = createDIV();
             div.appendChild(header);
             div.appendChild(vid);
-            div.appendChild(br);
             column.appendChild(div);
             if(counter % 3 == 0) {
+              div.appendChild(br);
             }
 
         }

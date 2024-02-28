@@ -1,26 +1,8 @@
 {
-  "name": "expo-post",
-  "version": "0.0.1",
-  "description": "Expo-Post main website.",
-  "main": "index.js",
-  "scripts": {
-    "compile": "npx tsc index.ts --resolveJsonModule",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Expo-Post/main.git"
-  },
-  "author": "Expo-Post",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Expo-Post/main/issues"
-  },
-  "homepage": "https://github.com/Expo-Post/main#readme",
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "nodemon": "^3.0.2",
