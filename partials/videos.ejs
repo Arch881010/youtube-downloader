@@ -27,15 +27,37 @@
     var url = "";
 
     async function ftch() {
+      var user = Cookies.get('user');
+
+      var params = `?user=${user}`;
+
+      if (user == undefined) {
+        user = "";
+        params = "";
+      };
+
       var url = await fetch("/url");
       url = await url.json();
-        var doc = document.getElementById('vids');
-        var data = await fetch(`${url.apiurl}/fnames`, {headers: {"Sec-Fetch-Site": "cross-site"}, "method":"GET"})//, headers: {"Access-Control-Allow-Origin": "*"}})
-        var data = await data.json();
-        var data = data.vids;
-        counter = 0;
-        col = 1
-        var column = document.getElementById(`${col}col`)
+      var data = "";
+      var doc = document.getElementById('vids');
+      try {
+        data = await fetch(`${url.apiurl}fnames?${params}`, {headers: {"Sec-Fetch-Site": "cross-site"}, "method":"GET"});//, headers: {"Access-Control-Allow-Origin": "*"}})
+      } catch(err) {
+        console.error(err);
+        alert("Sorry about that, the backend isn't running!");
+        return;
+      } 
+      data = await data.json();
+      data = data.vids;
+      counter = 0;
+      col = 1
+      var column = document.getElementById(`${col}col`)
+      if (data == "BAD_BACKEND_ERROR") {
+        alert("Sorry about that, the backend isn't working!");
+        console.error("Backend error");
+        return;
+      };
+
         for (var a of data) {
             counter++;
             var header = document.createElement("h4");
@@ -46,7 +68,7 @@
             vid.setAttribute('width', '320px');
             vid.setAttribute('height', '240px');
             var source = document.createElement('source');
-            source.setAttribute('src', `${url.guiurl}/videos/${a}`);
+            source.setAttribute('src', `${url.guiurl}videos/${a}`);
             vid.appendChild(source)
             //<source src="movie.mp4" type="video/mp4">
             //width="320" height="240"

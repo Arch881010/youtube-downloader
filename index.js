@@ -47,8 +47,8 @@ const home_file = "index.ejs"; //home_file to dev/active in dev mode.
 
 //Routers.
 const about = require('./routes/about.js');
-const login = require('./routes/login.ejs');
-const signup = require('./routes/signup.ejs')
+const login = require('./routes/login.js');
+const signup = require('./routes/signup.js')
 const download = require('./routes/download.js')
 const fourofour = require('./routes/404.js');
 

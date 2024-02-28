@@ -35,12 +35,18 @@ import string
 def create_key(length):
     characters = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(random.choice(characters) for i in range(length))
-    print("Random password is:", password)
     return password
 
 # Awful purify
 def clean(string):
-    return re.sub(r"[\"\'(),;[\]:]", "", string)
+    regexd = ""
+    if (string):
+        regexd = re.sub(r"[\"\'(),;[\]:.~/\\]", "", string)
+    else:
+        return ""
+    if (regexd == "undefined"):
+        return ""
+    return regexd
 
 def create_connection(path):
     connection = None
@@ -113,7 +119,7 @@ def fname124():
         files = []
         if user:
             files = os.listdir(f"./downloads/{user}") #if os.path.isfile(f)]
-            check = execute_query(f"SELECT key FROM users WHERE user='{user}'")
+            check = execute_query("SELECT key FROM users WHERE username = %s", user)
             logged_key = clean(check.fetchone())
             if key == logged_key:
                 ""
@@ -121,9 +127,17 @@ def fname124():
                 return flask.jsonify({'vids':["Never Gonna Give You Up.mp4", "Your key is invalid."]})
         else:
             files = os.listdir(f"./downloads") 
-        response = flask.jsonify({'vids':files})
+        returnFiles = []
+        for f in files:
+            if f.endswith(".mp4"):
+                returnFiles.append(f)
+        response = flask.jsonify({'vids':returnFiles})
         return response
-    except:
+    except FileNotFoundError:
+        os.mkdir(f"./downloads/{user}")
+        return flask.jsonify({"vids":[]})
+    except Error as e:
+        print(type(e))
         response = flask.jsonify({'vids':"BAD_BACKEND_ERROR"})
         return response
 
