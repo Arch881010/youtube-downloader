@@ -3,6 +3,9 @@
 # Imports sys module and then appends the parent directory to the system path, in order to get the raw function.
 import sys
 
+# Introduce string.
+string = "" 
+
 from jinja2 import Undefined
 sys.path.append('../')
 
@@ -12,6 +15,7 @@ from app import clean, re
 # Init overall feedback.
 results = []
 cleaned = []
+check = 0
 
 # Test case 1: Literal string.
 string = "asdf"
@@ -75,12 +79,20 @@ for word in cleaned:
     if num < 4 or num > 6:
         if word == "asdf":
             print(f"[{num}/7] passed!")
+            check = check + 1
         else:
             print(f"[{num}/7] failed!")
             print(f"Expected: asdf, got: {word}")
     else:
         if word == "":
             print(f"[{num}/7] passed!")
+            check = check + 1
         else:
             print(f"[{num}/7] failed!")
             print(f"Expected: '', got: {word}")
+
+if(check == 7):
+    print("Clean(): All tests passed!")
+else:
+    print("See above for failed tests.")
+    string = f"Clean(): Failed {7 - check}/7 tests."
