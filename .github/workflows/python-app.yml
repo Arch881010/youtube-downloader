@@ -36,4 +36,4 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test tests
       run: |
-        cd api_test && index.py
+        cd api_test && python index.py
