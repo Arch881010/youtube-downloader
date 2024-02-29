@@ -39,14 +39,19 @@ def create_key(length):
 
 # Awful purify
 def clean(string):
-    regexd = ""
-    if (string):
-        regexd = re.sub(r"[\"\'(),;[\]:.~/\\]", "", string)
-    else:
+    try:
+        regexd = ""
+        if (string):
+            regexd = re.sub(r"[\"\'*}<>+={$%^&!@~`?|(|),#_;[:.~(0-9)/\\\]-]", "", string)
+        else:
+            return ""
+        if (regexd == "Undefined" or regexd == "None"):
+            return ""
+        return regexd
+    except TypeError:
         return ""
-    if (regexd == "undefined"):
-        return ""
-    return regexd
+    except Error as e:
+        raise ValueError("Failed to clean string. Error: %", e)
 
 def create_connection(path):
     connection = None

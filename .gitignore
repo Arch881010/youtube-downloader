@@ -5,3 +5,6 @@ index.db
 .env
 downloads
 __pycache__
+
+api_test/api.py
+api_test/exec_api.py

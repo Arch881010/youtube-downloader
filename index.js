@@ -69,7 +69,7 @@ app.get('/', function (req, res, next) { //Main, does not need router.
     try {
         var query = req.query;
         if (query.github == "true") {
-            return res.send("Err 404, query not found. Please clear after ? in URL ")
+            return res.send("Err 404, query not found. Please clear after ? in URL")
             res.redirect("https://github.com/Arch881010/cmb-web");
         }
     } catch(err) {/* Do nothing */} //TODO: Check err against 'params are missing' vs req error itself. [Optional]

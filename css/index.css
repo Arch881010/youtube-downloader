@@ -25,3 +25,47 @@ button::after {
 .default-padding {
     padding: .5em 1em
 }
+
+.jumbotron {
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+    background-color: #e9ecef;
+    border-radius: 0.3rem;
+}
+.navbar {
+   padding: 1rem;
+}
+.navbar-nav {
+    display: flex;
+    justify-content: space-evenly;
+}
+.post-it {
+    width: 100%;
+    height: 500px;
+}
+
+.items-center {
+    align-items: center;
+}
+.items-right {
+    align-items: right;
+}
+.items-left {
+    align-items: left;
+}
+
+.alert {
+    position: fixed;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+}
+
+.alert .btn-close {
+    float: left;
+}
+
+.spinners {
+    max-height: 15px;
+    max-width: 15px;
+}
