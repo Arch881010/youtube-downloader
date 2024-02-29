@@ -57,9 +57,10 @@ def create_connection(path):
     connection = None
     try:
         connection = sqlite3.connect(path)
-        print("Connection to SQLite DB successful")
+        #print("Connection to SQLite DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
+        raise ValueError("Failed to connect to database.")
 
     return connection
 
@@ -83,7 +84,7 @@ def execute_query(connection, query, action=default):
         data = cursor.execute(query)
         action(data)
         connection.commit()
-        print("Query executed successfully")
+        #print("Query executed successfully")
         return data
     except Error as e:
         print(f"The error '{e}' occurred")
