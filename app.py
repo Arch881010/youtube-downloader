@@ -1,14 +1,19 @@
-
-#import the packages
 import os
 import re
-#s.exec("pip install pytube flask flask_cors")
 from pytube import YouTube
 from flask import *
 import flask
 from flask_cors import CORS
 import logging
 from dotenv import load_dotenv
+import sqlite3
+from sqlite3 import Error
+import random
+import string
+
+
+#import the packages
+#s.exec("pip install pytube flask flask_cors")
 
 load_dotenv()  # take environment variables from .env.
 
@@ -23,13 +28,8 @@ cors = CORS(app)#, resources={r"/*": {"origins": "*"}})
 
 app.debug = True
 
-import os
 
-import sqlite3
-from sqlite3 import Error
 
-import random
-import string
 
 # get random password pf length 8 with letters, digits, and symbols
 def create_key(length):
@@ -56,7 +56,7 @@ def clean(string):
 def create_connection(path):
     connection = None
     try:
-        connection = sqlite3.connect(path)
+        connection = sqlite3.connect(path, check_same_thread=False) # check_same_thread=False (https://stackoverflow.com/a/48234567)
         #print("Connection to SQLite DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
@@ -110,6 +110,13 @@ execute_query(connection, create_users_table)
     #with open("private.pem", "wb") as f:
     #    f.write(private_key.save_pkcs1("PEM"))
 
+@app.before_request
+def info():
+    #print(request.url)
+    #print(request.headers)
+    #print(request.method)
+    ""
+
 @app.route('/fnames')
 def fname124():
     req = request
@@ -125,8 +132,11 @@ def fname124():
         files = []
         if user:
             files = os.listdir(f"./downloads/{user}") #if os.path.isfile(f)]
-            check = execute_query("SELECT key FROM users WHERE username = %s", user)
-            logged_key = clean(check.fetchone())
+            check = execute_query(connection, "SELECT key FROM users WHERE username = '%s'", user)
+            try:
+                logged_key = clean(check.fetchone())
+            except AttributeError:
+                return flask.jsonify({'vids':["User not found?", "Clear your cookies for this website."]}) # This should NEVER happen.
             if key == logged_key:
                 ""
             else: 
@@ -162,11 +172,9 @@ def dl2354():
         my_video.download("./downloads")
         response = flask.jsonify({'result':"Video downloaded!"})
         return response
-        return "Video downloaded!"
     except:
         response = flask.jsonify({'result': "Failed to downlaod video. Either server is overloaded or the video is age-restricted."})
         return response
-        return 
 
 @app.route('/user/create')
 def CrUs1241():
@@ -180,7 +188,6 @@ def CrUs1241():
         ""
     else:
         response = flask.jsonify({'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"})
-        #return response
         return flask.jsonify({'result':"Recieved Plain Text Password | ERR_PLAIN_PASSWORD", 'key':"SEE_RESULT"})
 # Query should inclue user (txt), password (txt; encrypted), key (txt)
 # Key = Auth Key
@@ -195,18 +202,16 @@ VALUES
         execute_query(connection, query)
         response = flask.jsonify({"result":"Sucess!", "key":key})
         return response
-        return 
     except:
         response = flask.jsonify({'result':"Failed to create user.", "key":"CREATED|SEE_RESULT"})
         return response
-        return 
 
 
 @app.get('/user/retrive')
 def findUsers():
     def store_users(data):
         active_users = data
-    query = "SELECT user FROM user"
+    query = "SELECT user FROM users"
     execute_query(connection, query, store_users)
     response = flask.jsonify({'users':active_users})
 
@@ -222,14 +227,20 @@ def page_not_found(e):
 
 @app.after_request
 def after_request(response):
-  response.headers.add('Access-Control-Allow-Origin', os.getenv('guiurl')[0:-1])
-  #print("Access-Control-Allow-Origin", os.getenv('guiurl'))
-  #print(response.headers['Access-Control-Allow-Origin'])
-  response.headers.add('Access-Control-Allow-Headers', '*')
-  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-  response.headers.add("Access-Control-Expose-Headers","*")
-  response.headers.add("test", "completed")
-  return response
+    if (request.headers.get(['X-Forward-Host'])):
+        response.headers.add('Access-Control-Allow-Origin', request.headers['X-Forward-Host'])
+    else:
+        response.headers.add('Access-Control-Allow-Origin', os.getenv('guiurl')[0:-1])
+    #response.headers.add('Access-Control-Allow-Origin', os.getenv('guiurl')[0:-1])
+    #print(request.url)
+    #response.headers.add('Acccess-Control-Allow-Orgion', request.url)
+    #print("Access-Control-Allow-Origin", os.getenv('guiurl'))
+    #print(response.headers['Access-Control-Allow-Origin'])
+    response.headers.add('Access-Control-Allow-Headers', '*')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add("Access-Control-Expose-Headers","*")
+    response.headers.add("test", "completed")
+    return response
 
 @app.get('/video/<string:url>')
 def a():
@@ -237,4 +248,3 @@ def a():
 
 if __name__ == '__main__':
     app.run()
-

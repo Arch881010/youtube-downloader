@@ -41,7 +41,7 @@
       var data = "";
       var doc = document.getElementById('vids');
       try {
-        data = await fetch(`${url.apiurl}fnames?${params}`, {headers: {"Sec-Fetch-Site": "cross-site"}, "method":"GET"});//, headers: {"Access-Control-Allow-Origin": "*"}})
+        data = await fetch(`${url.apiurl}fnames${params}`, {headers: {"Sec-Fetch-Site": "cross-site"}, "method":"GET"});//, headers: {"Access-Control-Allow-Origin": "*"}})
       } catch(err) {
         console.error(err);
         alert("Sorry about that, the backend isn't running!");
