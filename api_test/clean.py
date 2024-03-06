@@ -93,6 +93,7 @@ for word in cleaned:
 
 if(check == 7):
     print("Clean(): All tests passed!")
+    string = ""
 else:
     print("See above for failed tests.")
     string = f"Clean(): Failed {7 - check}/7 tests."
