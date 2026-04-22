@@ -26,7 +26,7 @@ FILES_DIR = BASE_DIR / "files"
 FILES_DIR.mkdir(exist_ok=True)
 
 FILE_TTL_SECONDS = 30 * 60
-AUDIO_EXTENSIONS = {".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac"}
+AUDIO_EXTENSIONS = {".mp4", ".m4a"}#, ".aac", ".wav", ".ogg", ".opus", ".flac"}
 
 
 def read_int_env(name: str, default: int, minimum: int = 1) -> int:
@@ -190,6 +190,7 @@ def enforce_rate_limit():
     path = request.path
     if RATE_LIMIT_API_ONLY and not path.startswith("/api/"):
         return None
+    
 
     ip_address = get_client_ip()
     allowed, retry_after = check_rate_limit(ip_address)
