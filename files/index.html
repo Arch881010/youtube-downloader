@@ -1,52 +1,60 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Downloader</title>
-  <link rel="stylesheet" href="/files/index.css">
-</head>
-<body>
-  <main class="container">
-    <h1>YouTube Downloader</h1>
-    <p class="subtitle">Start a download, preview the result, then choose Download or Delete.</p>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>YouTube Downloader</title>
+		<link rel="stylesheet" href="/files/index.css" />
+	</head>
+	<body>
+		<main class="container">
+			<h1>YouTube Downloader</h1>
+			<p class="subtitle">
+				Start a download, preview the result, then choose Download or Delete.
+			</p>
 
-    <form id="downloadForm" class="card">
-      <label for="urlInput">YouTube URL</label>
-      <input
-        id="urlInput"
-        type="url"
-        placeholder="https://www.youtube.com/watch?v=..."
-        required
-      >
+			<form id="downloadForm" class="card">
+				<label for="urlInput">YouTube URL</label>
+				<input
+					id="urlInput"
+					type="url"
+					placeholder="https://www.youtube.com/watch?v=..."
+					required />
 
-      <label for="modeSelect">Download type</label>
-      <select id="modeSelect">
-        <option value="video">Video + Audio (mp4)</option>
-        <option value="audio">Audio Only (mp3)</option>
-      </select>
+				<label for="key">Enter the key the website owner gave you:</label>
+				<input id="key" type="text" placeholder="key" required />
 
-      <button id="startButton" type="submit">Start Download</button>
-    </form>
+				<label for="modeSelect">Download type</label>
+				<select id="modeSelect">
+					<option value="video">Video + Audio (mp4)</option>
+					<option value="audio">Audio Only (mp3)</option>
+				</select>
 
-    <section class="card" id="statusCard">
-      <h2>Status</h2>
-      <p id="statusText">No active download.</p>
-      <p id="expiresText" class="muted"></p>
-      <div class="actions">
-        <a id="downloadLink" href="#" hidden>Download</a>
-        <button id="deleteButton" type="button" class="danger" hidden>Delete</button>
-      </div>
-    </section>
+				<button id="startButton" type="submit">Start Download</button>
+			</form>
 
-    <section class="card" id="previewCard" hidden>
-      <h2>Preview</h2>
-      <p class="muted">Use this to confirm it is the right media before downloading.</p>
-      <video id="videoPreview" controls hidden></video>
-      <audio id="audioPreview" controls hidden></audio>
-    </section>
-  </main>
+			<section class="card" id="statusCard">
+				<h2>Status</h2>
+				<p id="statusText">No active download.</p>
+				<p id="expiresText" class="muted"></p>
+				<div class="actions">
+					<a id="downloadLink" href="#" hidden>Download</a>
+					<button id="deleteButton" type="button" class="danger" hidden>
+						Delete
+					</button>
+				</div>
+			</section>
 
-  <script src="/files/index.js"></script>
-</body>
+			<section class="card" id="previewCard" hidden>
+				<h2>Preview</h2>
+				<p class="muted">
+					Use this to confirm it is the right media before downloading.
+				</p>
+				<video id="videoPreview" controls hidden></video>
+				<audio id="audioPreview" controls hidden></audio>
+			</section>
+		</main>
+
+		<script src="/files/index.js"></script>
+	</body>
 </html>

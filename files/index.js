@@ -1,5 +1,6 @@
 const form = document.getElementById("downloadForm");
 const urlInput = document.getElementById("urlInput");
+const keyInput = document.getElementById("key");
 const modeSelect = document.getElementById("modeSelect");
 const statusText = document.getElementById("statusText");
 const expiresText = document.getElementById("expiresText");
@@ -180,10 +181,16 @@ async function startDownload(event) {
   event.preventDefault();
 
   const url = urlInput.value.trim();
+  const key = keyInput ? keyInput.value.trim() : "";
   const mode = modeSelect.value;
 
   if (!url) {
     setStatus("Please enter a URL.");
+    return;
+  }
+
+  if (!key) {
+    setStatus("Please enter your key.");
     return;
   }
 
@@ -199,8 +206,9 @@ async function startDownload(event) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Api-Key": key,
       },
-      body: JSON.stringify({ url, mode }),
+      body: JSON.stringify({ url, mode, key }),
     });
 
     activeJobId = job.id;

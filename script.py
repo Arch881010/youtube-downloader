@@ -9,12 +9,6 @@ import time
 from collections import deque
 from pathlib import Path
 from typing import Any
-from werkzeug.middleware.proxy_fix import ProxyFix
-
-from dotenv import load_dotenv
-load_dotenv()
-
-
 
 from flask import Flask, jsonify, request, send_file, Response
 from yt_dlp import YoutubeDL
@@ -45,17 +39,12 @@ def read_int_env(name: str, default: int, minimum: int = 1) -> int:
 RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "1") == "1"
 RATE_LIMIT_API_ONLY = os.getenv("RATE_LIMIT_API_ONLY", "1") == "1"
 RATE_LIMIT_WINDOW_SECONDS = read_int_env("RATE_LIMIT_WINDOW_SECONDS", default=60)
-RATE_LIMIT_MAX_REQUESTS = read_int_env("RATE_LIMIT_MAX_REQUESTS", default=120)
-RATE_LIMIT_BAN_SECONDS = read_int_env("RATE_LIMIT_BAN_SECONDS", default=300)
+RATE_LIMIT_MAX_REQUESTS = read_int_env("RATE_LIMIT_MAX_REQUESTS", default=10)
+RATE_LIMIT_BAN_SECONDS = read_int_env("RATE_LIMIT_BAN_SECONDS", default=600)
 RATE_LIMIT_STATE_TTL_SECONDS = RATE_LIMIT_BAN_SECONDS + RATE_LIMIT_WINDOW_SECONDS + 60
 YTDLP_USE_X_FORWARDED_FOR = os.getenv("YTDLP_USE_X_FORWARDED_FOR", "1") == "1"
-PROXY_JUMPS = read_int_env("proxies", default=0)
 
 app = Flask(__name__, static_folder="files", static_url_path="/files")
-
-app.wsgi_app = ProxyFix(
-    app.wsgi_app, x_for=PROXY_JUMPS, x_proto=PROXY_JUMPS, x_host=PROXY_JUMPS, x_prefix=PROXY_JUMPS
-)
 
 jobs: dict[str, dict[str, Any]] = {}
 jobs_lock = threading.Lock()
@@ -437,15 +426,7 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
 
 @app.get("/")
 def index() -> Response:
-    return send_file(FILES_DIR / "index.html")
-
-@app.get('/files/index.js')
-def indexjs() -> Response:
-    return send_file(FILES_DIR / "index.js")
-
-@app.get('/files/index.css')
-def indexcss() -> Response:
-    return send_file(FILES_DIR / "index.css")
+    return app.send_static_file("index.html")
 
 
 @app.post("/api/download")
