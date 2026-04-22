@@ -264,11 +264,11 @@ def download_worker(job_id: str, url: str, mode: str) -> None:
 def index() -> Response:
     return send_file(FILES_DIR / "index.html")
 
-@app.get('/index.js')
+@app.get('/files/index.js')
 def indexjs() -> Response:
     return send_file(FILES_DIR / "index.js")
 
-@app.get('/index.js')
+@app.get('/files/index.css')
 def indexcss() -> Response:
     return send_file(FILES_DIR / "index.css")
 
