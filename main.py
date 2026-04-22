@@ -264,6 +264,14 @@ def download_worker(job_id: str, url: str, mode: str) -> None:
 def index() -> Response:
     return send_file(FILES_DIR / "index.html")
 
+@app.get('/index.js')
+def indexjs() -> Response:
+    return send_file(FILES_DIR / "index.js")
+
+@app.get('/index.js')
+def indexcss() -> Response:
+    return send_file(FILES_DIR / "index.css")
+
 
 @app.post("/api/download")
 def create_download_job():
