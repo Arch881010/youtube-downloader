@@ -394,6 +394,7 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             "progress_hooks": [progress_hook],
             "quiet": True,
             "no_warnings": True,
+            "cookiefile": "cookies.txt"
         }
 
         if ytdlp_xff_ip:
