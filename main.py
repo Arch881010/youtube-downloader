@@ -233,6 +233,7 @@ def resolve_video_id(url: str) -> str:
         "no_warnings": True,
         "noplaylist": True,
         "extract_flat": True,
+        "cookiefile": "cookies.txt"
     }
 
     with YoutubeDL(ydl_options) as ydl:  # type: ignore
