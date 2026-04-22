@@ -49,7 +49,7 @@ RATE_LIMIT_MAX_REQUESTS = read_int_env("RATE_LIMIT_MAX_REQUESTS", default=120)
 RATE_LIMIT_BAN_SECONDS = read_int_env("RATE_LIMIT_BAN_SECONDS", default=300)
 RATE_LIMIT_STATE_TTL_SECONDS = RATE_LIMIT_BAN_SECONDS + RATE_LIMIT_WINDOW_SECONDS + 60
 YTDLP_USE_X_FORWARDED_FOR = os.getenv("YTDLP_USE_X_FORWARDED_FOR", "1") == "1"
-PROXY_JUMPS = read_int_env("proxies", default=0)
+PROXY_JUMPS = read_int_env("PROXIES", default=1)  # Default to 1 for typical Nginx setup
 
 app = Flask(__name__, static_folder="files", static_url_path="/files")
 
@@ -68,7 +68,12 @@ def now_ts() -> float:
 
 
 def get_client_ip() -> str:
-    # Nginx passes original client chain in X-Forwarded-For.
+    if PROXY_JUMPS > 0:
+        # ProxyFix has already processed the headers
+        return request.remote_addr or "unknown"
+    
+    # Fallback for when ProxyFix is disabled (PROXY_JUMPS=0)
+    # Parse X-Forwarded-For manually
     forwarded_for = request.headers.get("X-Forwarded-For", "")
     if forwarded_for:
         first_hop = forwarded_for.split(",")[0].strip()
@@ -82,20 +87,17 @@ def get_ytdlp_xff_ip() -> str | None:
     if not YTDLP_USE_X_FORWARDED_FOR:
         return None
 
-    forwarded_for = request.headers.get("X-Forwarded-For", "")
-    if not forwarded_for:
+    # Use the already-validated client IP from get_client_ip()
+    client_ip = get_client_ip()
+    if client_ip == "unknown":
         return None
 
-    first_hop = forwarded_for.split(",")[0].strip()
-    if not first_hop:
-        return None
-
+    # Validate it's a proper IP address
     try:
-        ipaddress.ip_address(first_hop)
+        ipaddress.ip_address(client_ip)
+        return client_ip
     except ValueError:
         return None
-
-    return first_hop
 
 
 def get_expected_api_key() -> str | None:
