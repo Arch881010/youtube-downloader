@@ -26,7 +26,7 @@ FILES_DIR = BASE_DIR / "files"
 FILES_DIR.mkdir(exist_ok=True)
 
 FILE_TTL_SECONDS = 30 * 60
-AUDIO_EXTENSIONS = {".mp4", ".m4a"}#, ".aac", ".wav", ".ogg", ".opus", ".flac"}
+AUDIO_EXTENSIONS = {".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac"}
 COOKIE_FILE_PATH = BASE_DIR / "cks.txt"
 
 
@@ -229,6 +229,18 @@ def sanitize_video_id(video_id: str) -> str:
     return cleaned
 
 
+def build_job_id(video_id: str, mode: str) -> str:
+    return f"{video_id}_{mode}"
+
+
+def extract_video_id_from_job_id(job_id: str) -> str:
+    if job_id.endswith("_audio"):
+        return job_id[:-6]
+    if job_id.endswith("_video"):
+        return job_id[:-6]
+    return job_id
+
+
 def get_cookiefile_if_available() -> str | None:
     # Use cookies only when the file is present and non-empty.
     if COOKIE_FILE_PATH.exists() and COOKIE_FILE_PATH.is_file() and COOKIE_FILE_PATH.stat().st_size > 0:
@@ -296,8 +308,10 @@ def infer_mode_from_file(file_path: Path, requested_mode: str) -> str:
 
 def build_completed_job(video_id: str, mode: str, file_path: Path) -> dict[str, Any]:
     title = sanitize_filename(file_path.stem)
+    job_id = build_job_id(video_id, mode)
     return {
-        "id": video_id,
+        "id": job_id,
+        "video_id": video_id,
         "url": "",
         "mode": mode,
         "status": "completed",
@@ -337,10 +351,11 @@ def find_downloaded_file(job_id: str) -> Path | None:
 def serialize_job(job: dict[str, Any]) -> dict[str, Any]:
     file_path = Path(job["file_path"]) if job.get("file_path") else None
     has_file = bool(job.get("status") == "completed" and file_path and file_path.exists())
+    video_id = str(job.get("video_id") or extract_video_id_from_job_id(str(job["id"])))
 
     return {
         "id": job["id"],
-        "videoId": job["id"],
+        "videoId": video_id,
         "mode": job["mode"],
         "status": job["status"],
         "title": job.get("title"),
@@ -561,8 +576,10 @@ def create_download_job():
     except Exception as exc:
         return jsonify({"error": f"Could not resolve video ID: {exc}"}), 400
 
+    job_id = build_job_id(video_id, mode)
+
     with jobs_lock:
-        existing_job = jobs.get(video_id)
+        existing_job = jobs.get(job_id)
 
         if existing_job and existing_job.get("status") in {"queued", "downloading"}:
             response_payload = serialize_job(existing_job)
@@ -574,21 +591,22 @@ def create_download_job():
             response_payload["reused"] = True
             return jsonify(response_payload), 200
 
-    existing_file = find_downloaded_file(video_id)
+    existing_file = find_downloaded_file(job_id)
     if existing_file:
         recovered_mode = infer_mode_from_file(existing_file, mode)
         recovered_job = build_completed_job(video_id, recovered_mode, existing_file)
+        recovered_job_id = str(recovered_job["id"])
 
         with jobs_lock:
-            jobs[video_id] = recovered_job
+            jobs[recovered_job_id] = recovered_job
 
         response_payload = serialize_job(recovered_job)
         response_payload["reused"] = True
         return jsonify(response_payload), 200
 
-    job_id = video_id
     job = {
         "id": job_id,
+        "video_id": video_id,
         "url": url,
         "mode": mode,
         "status": "queued",

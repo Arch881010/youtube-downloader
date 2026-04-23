@@ -194,6 +194,8 @@ async function startDownload(event) {
     return;
   }
 
+  setStatus("Starting request...")
+
   startButton.disabled = true;
   stopPolling();
   deleteButton.hidden = true;
