@@ -53,6 +53,12 @@ RATE_LIMIT_BAN_SECONDS = read_int_env("RATE_LIMIT_BAN_SECONDS", default=300)
 RATE_LIMIT_STATE_TTL_SECONDS = RATE_LIMIT_BAN_SECONDS + RATE_LIMIT_WINDOW_SECONDS + 60
 YTDLP_USE_X_FORWARDED_FOR = os.getenv("YTDLP_USE_X_FORWARDED_FOR", "1") == "1"
 YTDLP_COOKIES_FROM_BROWSER = os.getenv("YTDLP_COOKIES_FROM_BROWSER", "").strip().lower()
+YTDLP_JS_RUNTIMES = [
+    runtime.strip()
+    for runtime in os.getenv("YTDLP_JS_RUNTIMES", "node").split(",")
+    if runtime.strip()
+]
+YTDLP_JS_RUNTIME_CONFIG = {runtime: {} for runtime in YTDLP_JS_RUNTIMES}
 PROXY_JUMPS = read_int_env("PROXIES", default=1)  # Default to 1 for typical Nginx setup
 
 app = Flask(__name__, static_folder="files", static_url_path="/files")
@@ -327,6 +333,8 @@ def resolve_video_id(url: str) -> str:
         "extract_flat": True,
         "remote_components": ["ejs:github"],
     }
+    if YTDLP_JS_RUNTIME_CONFIG:
+        ydl_options["js_runtimes"] = YTDLP_JS_RUNTIME_CONFIG
 
     cookiefile = get_cookiefile_if_available()
     option_sets = build_ytdlp_attempt_option_sets(ydl_options, cookiefile)
@@ -507,6 +515,8 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             "no_warnings": True,
             "remote_components": ["ejs:github"],
         }
+        if YTDLP_JS_RUNTIME_CONFIG:
+            ydl_options["js_runtimes"] = YTDLP_JS_RUNTIME_CONFIG
 
         cookiefile = get_cookiefile_if_available()
         if cookiefile:
