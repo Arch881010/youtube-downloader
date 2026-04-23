@@ -27,6 +27,7 @@ FILES_DIR.mkdir(exist_ok=True)
 
 FILE_TTL_SECONDS = 30 * 60
 AUDIO_EXTENSIONS = {".mp4", ".m4a"}#, ".aac", ".wav", ".ogg", ".opus", ".flac"}
+COOKIE_FILE_PATH = BASE_DIR / "cks.txt"
 
 
 def read_int_env(name: str, default: int, minimum: int = 1) -> int:
@@ -228,19 +229,54 @@ def sanitize_video_id(video_id: str) -> str:
     return cleaned
 
 
+def get_cookiefile_if_available() -> str | None:
+    # Use cookies only when the file is present and non-empty.
+    if COOKIE_FILE_PATH.exists() and COOKIE_FILE_PATH.is_file() and COOKIE_FILE_PATH.stat().st_size > 0:
+        return str(COOKIE_FILE_PATH)
+    return None
+
+
+def is_retryable_ytdlp_issue(error: Exception) -> bool:
+    message = str(error)
+    return (
+        "Requested format is not available" in message
+        or "Only images are available for download" in message
+        or "challenge solving failed" in message
+    )
+
+
 def resolve_video_id(url: str) -> str:
     ydl_options: dict[str, Any] = {
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
         "extract_flat": True,
-        "cookiefile": "cookies.txt",
-        "runtime": ["node"],
-        "remote_components": "ejs:github"
     }
 
-    with YoutubeDL(ydl_options) as ydl:  # type: ignore
-        info = ydl.extract_info(url, download=False)
+    cookiefile = get_cookiefile_if_available()
+    option_sets: list[dict[str, Any]] = [dict(ydl_options)]
+    if cookiefile:
+        with_cookie = dict(ydl_options)
+        with_cookie["cookiefile"] = cookiefile
+        option_sets.insert(0, with_cookie)
+
+    info: Any = None
+    last_error: Exception | None = None
+
+    for option_set in option_sets:
+        try:
+            with YoutubeDL(option_set) as ydl:  # type: ignore
+                info = ydl.extract_info(url, download=False)
+            last_error = None
+            break
+        except Exception as exc:
+            last_error = exc
+            if is_retryable_ytdlp_issue(exc):
+                continue
+            raise
+
+    if last_error is not None:
+        raise last_error
 
     if not isinstance(info, dict):
         raise ValueError("Could not read video metadata")
@@ -390,16 +426,16 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
 
     try:
         ydl_options: dict[str, Any] = {
-            "format": "bestaudio/best" if mode == "audio" else "best[ext=mp4]/best",
             "outtmpl": str(DOWNLOAD_DIR / f"{job_id}.%(ext)s"),
             "noplaylist": True,
             "progress_hooks": [progress_hook],
             "quiet": True,
             "no_warnings": True,
-            "cookiefile": "cookies.txt",
-            "runtime": ["node"],
-            "remote_components": "ejs:github"
         }
+
+        cookiefile = get_cookiefile_if_available()
+        if cookiefile:
+            ydl_options["cookiefile"] = cookiefile
 
         if ytdlp_xff_ip:
             ydl_options["http_headers"] = {"X-Forwarded-For": ytdlp_xff_ip}
@@ -413,8 +449,46 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
                 }
             ]
 
-        with YoutubeDL(ydl_options) as ydl: # type: ignore
-            info = ydl.extract_info(url, download=True)
+        # Some videos don't provide the preferred progressive MP4 format.
+        # Try a strict format first, then fall back to broader selectors.
+        format_candidates = (
+            ["bestaudio/best"]
+            if mode == "audio"
+            else [
+                "bestvideo*[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
+                "bestvideo*+bestaudio/best",
+            ]
+        )
+
+        info: Any = None
+        last_error: Exception | None = None
+
+        attempt_option_sets: list[dict[str, Any]] = [dict(ydl_options)]
+        if cookiefile:
+            without_cookie = dict(ydl_options)
+            without_cookie.pop("cookiefile", None)
+            attempt_option_sets.append(without_cookie)
+
+        for option_set in attempt_option_sets:
+            for format_selector in format_candidates:
+                try:
+                    attempt_options = dict(option_set)
+                    attempt_options["format"] = format_selector
+                    with YoutubeDL(attempt_options) as ydl: # type: ignore
+                        info = ydl.extract_info(url, download=True)
+                    last_error = None
+                    break
+                except Exception as exc:
+                    last_error = exc
+                    if is_retryable_ytdlp_issue(exc):
+                        continue
+                    raise
+
+            if last_error is None:
+                break
+
+        if last_error is not None:
+            raise last_error
 
         final_file = find_downloaded_file(job_id)
         if final_file is None:
