@@ -9,6 +9,7 @@ import time
 from collections import deque
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from dotenv import load_dotenv
@@ -228,6 +229,34 @@ def sanitize_video_id(video_id: str) -> str:
     if not cleaned:
         raise ValueError("Could not determine a valid video ID from the URL")
     return cleaned
+
+
+def try_extract_video_id_from_url(url: str) -> str | None:
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return None
+
+    host = (parsed.netloc or "").lower()
+    path = (parsed.path or "").strip("/")
+
+    # youtu.be/<id>
+    if host.endswith("youtu.be") and path:
+        candidate = path.split("/")[0]
+        return sanitize_video_id(candidate)
+
+    # youtube.com/watch?v=<id>
+    if host.endswith("youtube.com"):
+        query_id = parse_qs(parsed.query).get("v", [""])[0]
+        if query_id:
+            return sanitize_video_id(query_id)
+
+        # youtube.com/shorts/<id> or /embed/<id>
+        segments = [segment for segment in path.split("/") if segment]
+        if len(segments) >= 2 and segments[0] in {"shorts", "embed", "live"}:
+            return sanitize_video_id(segments[1])
+
+    return None
 
 
 def build_job_id(video_id: str, mode: str) -> str:
@@ -589,7 +618,17 @@ def create_download_job():
     try:
         video_id = resolve_video_id(url)
     except Exception as exc:
-        return jsonify({"error": f"Could not resolve video ID: {exc}"}), 400
+        fallback_video_id = try_extract_video_id_from_url(url)
+        if fallback_video_id:
+            video_id = fallback_video_id
+        else:
+            message = clean_error_message(str(exc))
+            if "Sign in to confirm" in message and "not a bot" in message:
+                message = (
+                    "Could not resolve video ID because YouTube required bot verification. "
+                    "Export fresh YouTube cookies and save them to cks.txt or cookies.txt, then retry."
+                )
+            return jsonify({"error": f"Could not resolve video ID: {message}"}), 400
 
     job_id = build_job_id(video_id, mode)
 
