@@ -263,6 +263,7 @@ def resolve_video_id(url: str) -> str:
         "no_warnings": True,
         "noplaylist": True,
         "extract_flat": True,
+        "remote_components": "ejs:github"
     }
 
     cookiefile = get_cookiefile_if_available()
@@ -446,6 +447,7 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             "progress_hooks": [progress_hook],
             "quiet": True,
             "no_warnings": True,
+            "remote_components": "ejs:github"
         }
 
         cookiefile = get_cookiefile_if_available()
