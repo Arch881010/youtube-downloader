@@ -235,7 +235,8 @@ def resolve_video_id(url: str) -> str:
         "noplaylist": True,
         "extract_flat": True,
         "cookiefile": "cookies.txt",
-        "runtime": ["node"]
+        "runtime": ["node"],
+        "remote_components": "ejs:github"
     }
 
     with YoutubeDL(ydl_options) as ydl:  # type: ignore
@@ -396,7 +397,8 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             "quiet": True,
             "no_warnings": True,
             "cookiefile": "cookies.txt",
-            "runtime": ["node"]
+            "runtime": ["node"],
+            "remote_components": "ejs:github"
         }
 
         if ytdlp_xff_ip:
