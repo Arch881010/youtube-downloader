@@ -27,7 +27,8 @@ FILES_DIR.mkdir(exist_ok=True)
 
 FILE_TTL_SECONDS = 30 * 60
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac"}
-COOKIE_FILE_PATH = BASE_DIR / "cks.txt"
+COOKIE_FILE_CANDIDATES = (BASE_DIR / "cks.txt", BASE_DIR / "cookies.txt")
+ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 
 def read_int_env(name: str, default: int, minimum: int = 1) -> int:
@@ -242,10 +243,15 @@ def extract_video_id_from_job_id(job_id: str) -> str:
 
 
 def get_cookiefile_if_available() -> str | None:
-    # Use cookies only when the file is present and non-empty.
-    if COOKIE_FILE_PATH.exists() and COOKIE_FILE_PATH.is_file() and COOKIE_FILE_PATH.stat().st_size > 0:
-        return str(COOKIE_FILE_PATH)
+    # Use the first available cookie file that exists and is non-empty.
+    for candidate in COOKIE_FILE_CANDIDATES:
+        if candidate.exists() and candidate.is_file() and candidate.stat().st_size > 0:
+            return str(candidate)
     return None
+
+
+def clean_error_message(message: str) -> str:
+    return ANSI_ESCAPE_RE.sub("", message)
 
 
 def is_retryable_ytdlp_issue(error: Exception) -> bool:
@@ -263,7 +269,7 @@ def resolve_video_id(url: str) -> str:
         "no_warnings": True,
         "noplaylist": True,
         "extract_flat": True,
-        "remote_components": "ejs:github"
+        "remote_components": ["ejs:github"],
     }
 
     cookiefile = get_cookiefile_if_available()
@@ -447,7 +453,7 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             "progress_hooks": [progress_hook],
             "quiet": True,
             "no_warnings": True,
-            "remote_components": "ejs:github"
+            "remote_components": ["ejs:github"],
         }
 
         cookiefile = get_cookiefile_if_available()
@@ -532,7 +538,14 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             if not job:
                 return
             job["status"] = "failed"
-            job["error"] = str(exc)
+            message = clean_error_message(str(exc))
+            if "Sign in to confirm" in message and "not a bot" in message:
+                message = (
+                    "YouTube blocked this request and requires valid authentication cookies. "
+                    "Export fresh YouTube cookies and save them to cks.txt or cookies.txt, "
+                    "then retry."
+                )
+            job["error"] = message
 
 
 @app.get("/")
