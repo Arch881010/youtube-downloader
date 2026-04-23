@@ -52,6 +52,7 @@ RATE_LIMIT_MAX_REQUESTS = read_int_env("RATE_LIMIT_MAX_REQUESTS", default=120)
 RATE_LIMIT_BAN_SECONDS = read_int_env("RATE_LIMIT_BAN_SECONDS", default=300)
 RATE_LIMIT_STATE_TTL_SECONDS = RATE_LIMIT_BAN_SECONDS + RATE_LIMIT_WINDOW_SECONDS + 60
 YTDLP_USE_X_FORWARDED_FOR = os.getenv("YTDLP_USE_X_FORWARDED_FOR", "1") == "1"
+YTDLP_COOKIES_FROM_BROWSER = os.getenv("YTDLP_COOKIES_FROM_BROWSER", "").strip().lower()
 PROXY_JUMPS = read_int_env("PROXIES", default=1)  # Default to 1 for typical Nginx setup
 
 app = Flask(__name__, static_folder="files", static_url_path="/files")
@@ -284,12 +285,38 @@ def clean_error_message(message: str) -> str:
 
 
 def is_retryable_ytdlp_issue(error: Exception) -> bool:
-    message = str(error)
+    message = clean_error_message(str(error))
     return (
         "Requested format is not available" in message
         or "Only images are available for download" in message
         or "challenge solving failed" in message
+        or "Sign in to confirm" in message
+        or "not a bot" in message
     )
+
+
+def build_ytdlp_attempt_option_sets(
+    base_options: dict[str, Any],
+    cookiefile: str | None,
+) -> list[dict[str, Any]]:
+    option_sets: list[dict[str, Any]] = []
+
+    if cookiefile:
+        with_cookie = dict(base_options)
+        with_cookie["cookiefile"] = cookiefile
+        option_sets.append(with_cookie)
+
+    browser_name = YTDLP_COOKIES_FROM_BROWSER
+    if browser_name in {"chrome", "opera"}:
+        browser_name = ""
+
+    if browser_name:
+        with_browser_cookies = dict(base_options)
+        with_browser_cookies["cookiesfrombrowser"] = (browser_name,)
+        option_sets.append(with_browser_cookies)
+
+    option_sets.append(dict(base_options))
+    return option_sets
 
 
 def resolve_video_id(url: str) -> str:
@@ -302,11 +329,7 @@ def resolve_video_id(url: str) -> str:
     }
 
     cookiefile = get_cookiefile_if_available()
-    option_sets: list[dict[str, Any]] = [dict(ydl_options)]
-    if cookiefile:
-        with_cookie = dict(ydl_options)
-        with_cookie["cookiefile"] = cookiefile
-        option_sets.insert(0, with_cookie)
+    option_sets = build_ytdlp_attempt_option_sets(ydl_options, cookiefile)
 
     info: Any = None
     last_error: Exception | None = None
@@ -515,11 +538,7 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
         info: Any = None
         last_error: Exception | None = None
 
-        attempt_option_sets: list[dict[str, Any]] = [dict(ydl_options)]
-        if cookiefile:
-            without_cookie = dict(ydl_options)
-            without_cookie.pop("cookiefile", None)
-            attempt_option_sets.append(without_cookie)
+        attempt_option_sets = build_ytdlp_attempt_option_sets(ydl_options, cookiefile)
 
         for option_set in attempt_option_sets:
             for format_selector in format_candidates:
