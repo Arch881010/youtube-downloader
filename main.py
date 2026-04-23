@@ -234,7 +234,8 @@ def resolve_video_id(url: str) -> str:
         "no_warnings": True,
         "noplaylist": True,
         "extract_flat": True,
-        "cookiefile": "cookies.txt"
+        "cookiefile": "cookies.txt",
+        "runtime": ["node"]
     }
 
     with YoutubeDL(ydl_options) as ydl:  # type: ignore
@@ -394,7 +395,8 @@ def download_worker(job_id: str, url: str, mode: str, ytdlp_xff_ip: str | None) 
             "progress_hooks": [progress_hook],
             "quiet": True,
             "no_warnings": True,
-            "cookiefile": "cookies.txt"
+            "cookiefile": "cookies.txt",
+            "runtime": ["node"]
         }
 
         if ytdlp_xff_ip:
